@@ -32,6 +32,7 @@ should stop falling down.
  [0 0 0 0 0 0 0 0 0 0 0]]
 '''
 
+
 class Brick():
 
     def __init__(self, canvas, size, color, x, y):
@@ -71,14 +72,81 @@ def swich_colors(color_sequence):
     return result_sequence
 
 
-table = np.zeros(15 * 11, np.int32). reshape(15, 11)
+def to_num(stick_colors):
+    '''
+    1 - red
+    2 - blue
+    3 - yellow
+    4 - green
+    '''
+    colors = {"red": 1, "blue": 2, "yellow": 3, "green": 4}
+    result = []
+    for color in stick_colors:
+        result.append(colors[color])
+    return result
+
+
+def get_coords(x, y):
+    '''
+    [[0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]
+     [0 0 0 0 0 0 0 0 0 0 0]]
+    '''
+    print(x // size, y // size)
+    return x // size, y // size
+
+
+def add_stick(table, stick):
+    x = stick.x
+    y = stick.y
+    colors = to_num(stick.colors)
+    print(colors)
+    print(x, y, colors)
+    index_x, index_y = get_coords(x, y)
+    print(index_x, index_y)
+    for i in range(3):
+        table[index_y + i - 1][index_x] = colors[i]
+        print(table)
+    return table
+
+
+def draw_table(table):
+    # global win
+    colors = {1: "red", 2: "blue", 3: "yellow", 4: "green"}
+    for i in range(rows):
+        for j in range(columns):
+            if table[i][j]:
+                print(i * size, j * size, table[i][j], colors[table[i][j]])
+                pygame.draw.rect(win, colors[table[i][j]],
+                                 (j * size, i * size, size, size))
+                # Brick(win, size, colors[table[i][j]], x, y)
+            # print(table[i][j], end="")
+        # print()
+    # print()
+
+
+rows = 15
+columns = 11
+table = np.zeros(rows * columns, np.int32). reshape(rows, columns)
 print(table)
 
 
 pygame.init()
 size = 40
-window_height = size * 15
-window_width = size * 11
+window_height = size * rows
+window_width = size * columns
 default_x = (window_width - size) // 2
 x = default_x
 default_y = 0
@@ -94,7 +162,10 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+
     win.fill((0, 0, 0))
+    draw_table(table)
+
     if not stick_count:
         colors_sequence = [choice(colors), choice(colors), choice(colors)]
         stick_count = 1
@@ -107,6 +178,9 @@ while run:
             start = time()
     else:
         stick_count = 0
+        table = add_stick(table, stick)
+        print(stick.x, stick.y, stick.colors)
+        print(table)
         x = default_x
         y = default_y
 
@@ -121,10 +195,10 @@ while run:
 
     if keys[pygame.K_UP]:
         colors_sequence = swich_colors(colors_sequence)
-        win.fill((0, 0, 0))
-        stick = Stick(win, size, colors_sequence, x, y)
-        pygame.display.update()
-        pygame.time.delay(90)
+        # win.fill((0, 0, 0))
+        # stick = Stick(win, size, colors_sequence, x, y)
+        # pygame.display.update()
+        # pygame.time.delay(90)
 
     if keys[pygame.K_SPACE]:
         y = window_height - size * 3
